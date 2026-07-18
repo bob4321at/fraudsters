@@ -1,10 +1,12 @@
 package utils
 
 import (
+	"bytes"
+	"io"
 	"math"
 	"sync"
 
-	"github.com/4kills/go-zlib"
+	"compress/zlib"
 )
 
 var Mouse_X = 0.0
@@ -14,24 +16,39 @@ type Vec2 struct {
 	X, Y float64
 }
 
-func DecodeBinary(bytes []byte) []byte {
-	r, err := zlib.NewReader(nil)
+func DecodeBinary(compressedBytes []byte) []byte {
+	reader := bytes.NewReader(compressedBytes)
+
+	r, err := zlib.NewReader(reader)
 	if err != nil {
 		panic(err)
 	}
 	defer r.Close()
 
-	_, dc, _ := r.ReadBuffer(bytes, nil)
+	decompressed, err := io.ReadAll(r)
+	if err != nil {
+		panic(err)
+	}
 
-	return dc
+	return decompressed
 }
 
-func EncodeBinary(bytes []byte) []byte {
-	w := zlib.NewWriter(nil)
-	defer w.Close()
-	c, _ := w.WriteBuffer(bytes, nil)
+func EncodeBinary(byte []byte) []byte {
+	var buf bytes.Buffer
 
-	return c
+	w := zlib.NewWriter(&buf)
+
+	_, err := w.Write(byte)
+	if err != nil {
+		panic(err)
+	}
+
+	err = w.Close()
+	if err != nil {
+		panic(err)
+	}
+
+	return buf.Bytes()
 }
 
 func GetDist(point_1, point_2 Vec2) float64 {
