@@ -1,0 +1,22 @@
+{
+  "Name": "Blue",
+  "Position": {
+    "X": 0,
+    "Y": 0
+  },
+  "Velocity": {
+    "X": 0,
+    "Y": 0
+  },
+  "Damage": 10,
+  "Speed": 0,
+  "Lifetime": 500,
+  "Movement": "Static",
+  "ImgPath": "./art/blue.png",
+  "Destroy": false,
+  "JustSpawned": false,
+  "Size": {
+    "X": 0,
+    "Y": 0
+  }
+}

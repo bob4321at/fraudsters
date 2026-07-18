@@ -1,0 +1,24 @@
+{
+  "Name": "Purple",
+  "Position": {
+    "X": 0,
+    "Y": 0
+  },
+  "Velocity": {
+    "X": 0,
+    "Y": 0
+  },
+  "Damage": 10,
+  "Speed": 1,
+  "Lifetime": 300,
+  "Movement": "ShootAt",
+  "ImgPath": "./art/purple.png",
+  "Destroy": false,
+  "JustSpawned": false,
+  "Size": {
+    "X": 0,
+    "Y": 0
+  }
+}
+
+
