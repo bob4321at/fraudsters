@@ -1,12 +1,15 @@
 package main
 
 import (
+	"bufio"
+	"fmt"
 	"image/color"
 	"main/level"
 	"main/player"
 	"main/scroll"
 	"main/server"
 	"main/utils"
+	"os"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
@@ -60,7 +63,25 @@ func (g *Game) Layout(ow, oh int) (sw, sh int) {
 	return 540, 320
 }
 
+var decided = false
+
 func main() {
+	for !decided {
+		scanner := bufio.NewScanner(os.Stdin)
+		for scanner.Scan() {
+			link := scanner.Text()
+			if link == " " {
+				decided = true
+				break
+			} else if link != "" {
+				server.ServerAddress = link
+				decided = true
+				break
+			}
+		}
+	}
+	fmt.Println(server.ServerAddress)
+
 	Player.Scrolls = TestScrolls
 	Player.Health = 100
 	ebiten.SetWindowSize(540*3, 320*3)

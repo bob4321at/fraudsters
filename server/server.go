@@ -47,7 +47,7 @@ var Connection *net.UDPConn
 
 var IsHost = false
 
-var server_address = "gqvxi-2604-3d09-176a-3100-45b8-49ad-275d-81ac.run.pinggy-free.link:53740"
+var ServerAddress = "localhost:8080"
 
 const BUFFERSIZE = 1024 * 8
 
@@ -203,7 +203,7 @@ func Update(Level *level.LevelStruct, Player *player.PlayerStruct) {
 func ConnectToServer(Player *player.PlayerStruct) {
 	fmt.Println("connecting to server")
 
-	address, err := net.ResolveUDPAddr("udp", server_address)
+	address, err := net.ResolveUDPAddr("udp", ServerAddress)
 	if err != nil {
 		panic(err)
 	}
@@ -246,8 +246,6 @@ func ConnectToServer(Player *player.PlayerStruct) {
 	time.Sleep(time.Second)
 
 	for {
-		time.Sleep(time.Second / 30)
-
 		// SEND SCROLLS
 		player.ScrollQueue.Range(func(key, value any) bool {
 			scrolls_to_add := value.(scroll.ScrollInventoryStruct)
