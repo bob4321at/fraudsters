@@ -76,7 +76,7 @@ func UpdateScrolls(Level *level.LevelStruct, Player *player.PlayerStruct) {
 		ScrollPhysics(current_scroll, Level)
 
 		if !IsHost {
-			break
+			continue
 		}
 
 		current_scroll.Lifetime += 1

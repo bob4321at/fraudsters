@@ -1,16 +1,18 @@
 package main
 
 import (
-	"fmt"
 	"image/color"
+	"log"
 	"os"
 
 	"main/level"
 	"main/player"
 	"main/scroll"
 	"main/server"
+	"main/shader"
 	"main/utils"
 
+	"github.com/bob4321at/textures"
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
@@ -27,6 +29,8 @@ var Level = level.NewLevel()
 
 var Decided = false
 
+var ShaderLayer = textures.NewTexture("./art/empty.png", shader.BorderShader)
+
 func (g *Game) Update() error {
 	Player.Update(&Level)
 	server.Update(&Level, &Player)
@@ -39,14 +43,14 @@ func (g *Game) Update() error {
 		if ebiten.IsKeyPressed(ebiten.KeyH) {
 			go server.StartServer(&Player)
 			Decided = true
-			fmt.Println("Hosting server...")
+			log.Println("Hosting server...")
 		} else if ebiten.IsKeyPressed(ebiten.KeyC) {
 			if server.ServerAddress == "" {
 				server.ServerAddress = "localhost:8080"
 			}
 			go server.ConnectToServer(&Player)
 			Decided = true
-			fmt.Println("Connecting to:", server.ServerAddress)
+			log.Println("Connecting to:", server.ServerAddress)
 		}
 	}
 
@@ -56,9 +60,13 @@ func (g *Game) Update() error {
 func (g *Game) Draw(screen *ebiten.Image) {
 	screen.Fill(color.RGBA{230, 230, 230, 255})
 
-	server.Draw(screen)
-	Player.Draw(screen)
-	Level.Draw(screen)
+	ShaderLayer.Img.Clear()
+
+	server.Draw(ShaderLayer.Img)
+	Player.Draw(ShaderLayer.Img)
+	Level.Draw(ShaderLayer.Img)
+
+	ShaderLayer.Draw(screen, &ebiten.DrawImageOptions{})
 }
 
 func (g *Game) Layout(ow, oh int) (sw, sh int) {
@@ -76,7 +84,7 @@ func main() {
 	ebiten.SetWindowSize(540*3, 320*3)
 	ebiten.SetWindowTitle("Fraudsters")
 
-	fmt.Println("Game started! Press 'H' to Host, or 'C' to Connect.")
+	log.Println("Game started! Press 'H' to Host, or 'C' to Connect.")
 
 	if err := ebiten.RunGame(&Game{}); err != nil {
 		panic(err)

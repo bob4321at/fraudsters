@@ -2,7 +2,6 @@ package scroll
 
 import (
 	"encoding/json"
-	"fmt"
 	"main/utils"
 	"math"
 	"os"
@@ -24,6 +23,7 @@ type NetworkedSpell struct {
 	Destroy     bool
 	JustSpawned bool
 	Size        utils.Vec2
+	ID          int
 }
 
 type SpellInfo struct {
@@ -37,6 +37,8 @@ type Condition struct {
 }
 
 var ConditionsToApply sync.Map
+
+var AddedSpells = 0
 
 func AddSpell(path string, ScrollPos utils.Vec2) {
 	bytes, err := os.ReadFile(path)
@@ -63,6 +65,10 @@ func AddSpell(path string, ScrollPos utils.Vec2) {
 		spell_queue_length += 1
 		return true
 	})
+
+	AddedSpells += 1
+
+	spell.ID = AddedSpells
 
 	SpellQueue.Store(spell_queue_length+1, spell)
 }
@@ -91,8 +97,6 @@ func ShootAt(current_spell *NetworkedSpell, info *SpellInfo) {
 	if !current_spell.JustSpawned {
 		client_dist := utils.GetDist(current_spell.Position, info.ClientPosistion)
 		host_dist := utils.GetDist(current_spell.Position, info.HostPosistion)
-
-		fmt.Println(info.ClientPosistion)
 
 		target_angle := 90.0
 

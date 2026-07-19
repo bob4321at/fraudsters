@@ -2,7 +2,6 @@ package server
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"main/level"
 	"main/player"
@@ -54,7 +53,7 @@ const BUFFERSIZE = 1024 * 8
 var OtherPlayerDrawnPos utils.Vec2
 
 func StartServer(Player *player.PlayerStruct) {
-	fmt.Println("starting server")
+	log.Println("starting server")
 
 	address, err := net.ResolveUDPAddr("udp", ":8080")
 	if err != nil {
@@ -71,9 +70,9 @@ func StartServer(Player *player.PlayerStruct) {
 
 	_, clientAddr, err := Connection.ReadFromUDP(buffer)
 	if err != nil {
-		fmt.Println(err)
+		log.Fatal(err)
 	}
-	fmt.Println("NewClient: ", string(utils.DecodeBinary(buffer)))
+	log.Println("NewClient: ", string(utils.DecodeBinary(buffer)))
 
 	IsHost = true
 
@@ -108,13 +107,13 @@ func StartServer(Player *player.PlayerStruct) {
 			player.ScrollQueue.Clear()
 		} else {
 			// Get Other Player
-			time.Sleep(time.Second / 30)
+			time.Sleep(time.Second / 15)
 
 			buffer := make([]byte, BUFFERSIZE)
 
 			_, clientAddr, err := Connection.ReadFromUDP(buffer)
 			if err != nil {
-				fmt.Println(err)
+				log.Fatal(err)
 			}
 
 			OriginalScrolls := []ServerSideScrolls{}
@@ -184,16 +183,13 @@ func Update(Level *level.LevelStruct, Player *player.PlayerStruct) {
 	if Connected {
 		UpdateScrolls(Level, Player)
 		UpdateSpells(Player)
-		fmt.Println("testing")
 
-		if utils.GetDist(OtherPlayerDrawnPos, GameState.OtherPlayer.POS) > 2 {
+		if utils.GetDist(OtherPlayerDrawnPos, GameState.OtherPlayer.POS) > 1 {
 			angle := math.Atan2(OtherPlayerDrawnPos.Y-GameState.OtherPlayer.POS.Y, OtherPlayerDrawnPos.X-GameState.OtherPlayer.POS.X)
 
-			OtherPlayerDrawnPos.X -= math.Cos(angle) * 2.5
-			OtherPlayerDrawnPos.Y -= math.Sin(angle) * 2.5
+			OtherPlayerDrawnPos.X -= math.Cos(angle) * 3 * (utils.GetDist(OtherPlayerDrawnPos, GameState.OtherPlayer.POS) / 20)
+			OtherPlayerDrawnPos.Y -= math.Sin(angle) * 3 * (utils.GetDist(OtherPlayerDrawnPos, GameState.OtherPlayer.POS) / 20)
 
-			fmt.Println(OtherPlayerDrawnPos)
-			fmt.Println(GameState.OtherPlayer.POS)
 		} else {
 			OtherPlayerDrawnPos = GameState.OtherPlayer.POS
 		}
@@ -201,7 +197,7 @@ func Update(Level *level.LevelStruct, Player *player.PlayerStruct) {
 }
 
 func ConnectToServer(Player *player.PlayerStruct) {
-	fmt.Println("connecting to server")
+	log.Println("connecting to server")
 
 	address, err := net.ResolveUDPAddr("udp", ServerAddress)
 	if err != nil {
@@ -247,6 +243,7 @@ func ConnectToServer(Player *player.PlayerStruct) {
 
 	for {
 		// SEND SCROLLS
+		time.Sleep(time.Second / 15)
 		player.ScrollQueue.Range(func(key, value any) bool {
 			scrolls_to_add := value.(scroll.ScrollInventoryStruct)
 			GameState.ScrollsToAdd = append(GameState.ScrollsToAdd, scrolls_to_add)

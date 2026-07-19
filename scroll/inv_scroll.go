@@ -1,7 +1,6 @@
 package scroll
 
 import (
-	"fmt"
 	"main/utils"
 	"sync"
 )
@@ -48,10 +47,6 @@ func PlayerTenClose(PlayerPos, OtherPlayerPos, ScrollPos utils.Vec2) bool {
 	return (client_dist < 10 || host_dist < 10)
 }
 
-func PrintSpell(PlayerPos, OtherPlayerPos, ScrollPos utils.Vec2) {
-	fmt.Println("testing spells")
-}
-
 func BlueSpell(PlayerPos, OtherPlayerPos, ScrollPos utils.Vec2) {
 	AddSpell("./assets/spells/blue.json", ScrollPos)
 }
@@ -74,8 +69,7 @@ var Conditions = map[string]func(PlayerPos, OtherPlayerPos, ScrollPos utils.Vec2
 }
 
 var Actions = map[string]func(PlayerPos, OtherPlayerPos, ScrollPos utils.Vec2){
-	"print_spell": PrintSpell,
-	"blue":        BlueSpell,
-	"red":         RedSpell,
-	"purple":      PurpleSpell,
+	"blue":   BlueSpell,
+	"red":    RedSpell,
+	"purple": PurpleSpell,
 }

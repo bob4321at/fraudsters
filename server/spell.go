@@ -39,14 +39,23 @@ func UpdateSpells(Player *player.PlayerStruct) {
 		}
 
 		spell := &GameState.Spells[i]
-		info := scroll.SpellInfo{
-			HostPosistion:   Player.Pos,
-			ClientPosistion: GameState.OtherPlayer.POS,
+		var info scroll.SpellInfo
+		if IsHost {
+			info := scroll.SpellInfo{
+				HostPosistion:   Player.Pos,
+				ClientPosistion: GameState.OtherPlayer.POS,
+			}
+			spell.Update(&info)
+		} else {
+			info := scroll.SpellInfo{
+				HostPosistion:   GameState.OtherPlayer.POS,
+				ClientPosistion: Player.Pos,
+			}
+			spell.Update(&info)
 		}
-		spell.Update(&info)
 
 		if !IsHost {
-			break
+			continue
 		}
 
 		spell.Lifetime -= 1
