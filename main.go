@@ -1,15 +1,15 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"image/color"
+	"os"
+
 	"main/level"
 	"main/player"
 	"main/scroll"
 	"main/server"
 	"main/utils"
-	"os"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
@@ -38,12 +38,15 @@ func (g *Game) Update() error {
 	if !Decided {
 		if ebiten.IsKeyPressed(ebiten.KeyH) {
 			go server.StartServer(&Player)
-
 			Decided = true
+			fmt.Println("Hosting server...")
 		} else if ebiten.IsKeyPressed(ebiten.KeyC) {
+			if server.ServerAddress == "" {
+				server.ServerAddress = "localhost:8080"
+			}
 			go server.ConnectToServer(&Player)
-
 			Decided = true
+			fmt.Println("Connecting to:", server.ServerAddress)
 		}
 	}
 
@@ -54,7 +57,6 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	screen.Fill(color.RGBA{230, 230, 230, 255})
 
 	server.Draw(screen)
-
 	Player.Draw(screen)
 	Level.Draw(screen)
 }
@@ -63,28 +65,19 @@ func (g *Game) Layout(ow, oh int) (sw, sh int) {
 	return 540, 320
 }
 
-var decided = false
-
 func main() {
-	for !decided {
-		scanner := bufio.NewScanner(os.Stdin)
-		for scanner.Scan() {
-			link := scanner.Text()
-			if link == " " {
-				decided = true
-				break
-			} else if link != "" {
-				server.ServerAddress = link
-				decided = true
-				break
-			}
-		}
+	if len(os.Args) > 1 {
+		server.ServerAddress = os.Args[1]
 	}
-	fmt.Println(server.ServerAddress)
 
 	Player.Scrolls = TestScrolls
 	Player.Health = 100
+
 	ebiten.SetWindowSize(540*3, 320*3)
+	ebiten.SetWindowTitle("Fraudsters")
+
+	fmt.Println("Game started! Press 'H' to Host, or 'C' to Connect.")
+
 	if err := ebiten.RunGame(&Game{}); err != nil {
 		panic(err)
 	}
