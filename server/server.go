@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"main/level"
 	"main/player"
@@ -19,8 +20,10 @@ import (
 var Connected = false
 
 type OtherPlayerStruct struct {
-	POS    utils.Vec2
-	Health int
+	POS            utils.Vec2
+	Health         int
+	Velocity       utils.Vec2
+	LastUpdateTime time.Time
 }
 
 type GameStateStruct struct {
@@ -84,7 +87,7 @@ func StartServer(Player *player.PlayerStruct) {
 			json.Unmarshal(game_state_bytes, &GameState)
 
 			game_state_this_user := GameState
-			game_state_this_user.OtherPlayer = OtherPlayerStruct{Player.Pos, Player.Health}
+			game_state_this_user.OtherPlayer = OtherPlayerStruct{Player.Pos, Player.Health, Player.Vel, time.Now()}
 
 			game_state_bytes, err := json.Marshal(game_state_this_user)
 			if err != nil {
@@ -135,6 +138,8 @@ func StartServer(Player *player.PlayerStruct) {
 			other_game_state := utils.DecodeBinary(buffer)
 			json.Unmarshal(other_game_state, &GameState)
 
+			LastUpdate = 0
+
 			GameState.Scrolls = OriginalScrolls
 			GameState.Spells = OriginalSpells
 			GameState.OtherPlayer.Health = other_player_real_health
@@ -149,7 +154,7 @@ func StartServer(Player *player.PlayerStruct) {
 
 			// Send Data
 			game_state_this_user := GameState
-			game_state_this_user.OtherPlayer = OtherPlayerStruct{Player.Pos, GameState.OtherPlayer.Health}
+			game_state_this_user.OtherPlayer = OtherPlayerStruct{Player.Pos, GameState.OtherPlayer.Health, Player.Vel, time.Now()}
 
 			game_state_bytes, err := json.Marshal(game_state_this_user)
 			if err != nil {
@@ -179,20 +184,31 @@ func Draw(screen *ebiten.Image) {
 	}
 }
 
+var LastUpdate = 0
+
 func Update(Level *level.LevelStruct, Player *player.PlayerStruct) {
 	if Connected {
 		UpdateScrolls(Level, Player)
 		UpdateSpells(Player)
 
-		if utils.GetDist(OtherPlayerDrawnPos, GameState.OtherPlayer.POS) > 1 {
-			angle := math.Atan2(OtherPlayerDrawnPos.Y-GameState.OtherPlayer.POS.Y, OtherPlayerDrawnPos.X-GameState.OtherPlayer.POS.X)
+		LastUpdate += 1
 
-			OtherPlayerDrawnPos.X -= math.Cos(angle) * 3 * (utils.GetDist(OtherPlayerDrawnPos, GameState.OtherPlayer.POS) / 20)
-			OtherPlayerDrawnPos.Y -= math.Sin(angle) * 3 * (utils.GetDist(OtherPlayerDrawnPos, GameState.OtherPlayer.POS) / 20)
-
-		} else {
-			OtherPlayerDrawnPos = GameState.OtherPlayer.POS
+		if LastUpdate <= 60 {
+			GameState.OtherPlayer.POS.X += GameState.OtherPlayer.Velocity.X
+			GameState.OtherPlayer.POS.Y += GameState.OtherPlayer.Velocity.Y
 		}
+
+		if Level.Collide(utils.Vec2{X: GameState.OtherPlayer.POS.X, Y: GameState.OtherPlayer.POS.Y + GameState.OtherPlayer.Velocity.Y}, utils.Vec2{X: 12, Y: 16}) {
+			GameState.OtherPlayer.Velocity.Y = 0
+		}
+		if Level.Collide(utils.Vec2{X: GameState.OtherPlayer.POS.X + GameState.OtherPlayer.Velocity.X, Y: GameState.OtherPlayer.POS.Y}, utils.Vec2{X: 12, Y: 16}) {
+			GameState.OtherPlayer.Velocity.X = 0
+		}
+
+		fmt.Println(GameState.OtherPlayer.Velocity)
+
+		OtherPlayerDrawnPos.X -= math.Cos(math.Atan2(OtherPlayerDrawnPos.Y-GameState.OtherPlayer.POS.Y, OtherPlayerDrawnPos.X-GameState.OtherPlayer.POS.X)) * utils.GetDist(OtherPlayerDrawnPos, GameState.OtherPlayer.POS) / 10
+		OtherPlayerDrawnPos.Y -= math.Sin(math.Atan2(OtherPlayerDrawnPos.Y-GameState.OtherPlayer.POS.Y, OtherPlayerDrawnPos.X-GameState.OtherPlayer.POS.X)) * utils.GetDist(OtherPlayerDrawnPos, GameState.OtherPlayer.POS) / 10
 	}
 }
 
@@ -211,7 +227,7 @@ func ConnectToServer(Player *player.PlayerStruct) {
 	defer Connection.Close()
 
 	game_state_to_send := GameState
-	game_state_to_send.OtherPlayer = OtherPlayerStruct{Player.Pos, Player.Health}
+	game_state_to_send.OtherPlayer = OtherPlayerStruct{Player.Pos, Player.Health, Player.Vel, time.Now()}
 
 	game_state_bytes, err := json.Marshal(game_state_to_send)
 	if err != nil {
@@ -253,7 +269,7 @@ func ConnectToServer(Player *player.PlayerStruct) {
 
 		// SEND SELF
 		game_state_to_send := GameState
-		game_state_to_send.OtherPlayer = OtherPlayerStruct{Player.Pos, Player.Health}
+		game_state_to_send.OtherPlayer = OtherPlayerStruct{Player.Pos, Player.Health, Player.Vel, time.Now()}
 
 		game_state_bytes, err := json.Marshal(game_state_to_send)
 		if err != nil {
@@ -279,5 +295,6 @@ func ConnectToServer(Player *player.PlayerStruct) {
 		other_game_state_bytes := utils.DecodeBinary(buffer)
 		json.Unmarshal(other_game_state_bytes, &GameState)
 		Player.Health = GameState.OtherPlayer.Health
+		LastUpdate = 0
 	}
 }

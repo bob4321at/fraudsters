@@ -51,7 +51,14 @@ func (player *PlayerStruct) Update(current_level *level.LevelStruct) {
 	} else if ebiten.IsKeyPressed(ebiten.KeyD) {
 		player.Vel.X = 2
 	} else {
-		player.Vel.X = 0
+		if player.Vel.X >= 0.1 {
+			player.Vel.X -= 0.1
+		} else if player.Vel.X <= 0.1 {
+			player.Vel.X += 0.1
+		} 
+		if math.Abs(player.Vel.X) <= 0.2 {
+			player.Vel.X = 0
+		}
 	}
 
 	if ebiten.IsKeyPressed(ebiten.KeySpace) && player.CanJump {
@@ -74,7 +81,6 @@ func (player *PlayerStruct) Update(current_level *level.LevelStruct) {
 			scroll_length += 1
 			return true
 		})
-		// fmt.Println(scroll_length)
 
 		VelocityAngle := math.Atan2(utils.Mouse_Y-player.Pos.Y, utils.Mouse_X-player.Pos.X)
 
