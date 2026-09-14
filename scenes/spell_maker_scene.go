@@ -103,6 +103,15 @@ func (scene SpellMakerSceneStruct) Update() {
 		}
 	}
 
+	for i := range ChosenScrolls[CurrentlyEditing].Conditions {
+		if utils.Collide(utils.Vec2{X: utils.Mouse_X, Y: utils.Mouse_Y}, utils.Vec2{X: 1, Y: 1}, utils.Vec2{X: 40, Y: float64(80 + i*16)}, utils.Vec2{X: 205, Y: 16}) {
+			if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
+				utils.RemoveArrayElement(i, &ChosenScrolls[CurrentlyEditing].Conditions)
+				i = len(ChosenScrolls[CurrentlyEditing].Conditions) + 1
+			}
+		}
+	}
+
 	for i, condition := range PossibleConditions {
 		if utils.Collide(utils.Vec2{X: utils.Mouse_X, Y: utils.Mouse_Y}, utils.Vec2{X: 1, Y: 1}, utils.Vec2{X: 271, Y: float64(16 + i*16)}, utils.Vec2{X: 1000, Y: 16}) {
 			if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
