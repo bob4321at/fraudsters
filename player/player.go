@@ -55,7 +55,7 @@ func (player *PlayerStruct) Update(current_level *level.LevelStruct) {
 			player.Vel.X -= 0.1
 		} else if player.Vel.X <= 0.1 {
 			player.Vel.X += 0.1
-		} 
+		}
 		if math.Abs(player.Vel.X) <= 0.2 {
 			player.Vel.X = 0
 		}
@@ -109,6 +109,8 @@ func NewPlayer(Pos utils.Vec2, Scrolls []scroll.ScrollInventoryStruct) PlayerStr
 	new_player.Pos = Pos
 	new_player.Texture = textures.NewTexture("./art/player.png", "")
 	new_player.SelectedSpell = 0
+	new_player.Scrolls = Scrolls
+	new_player.Health = 100
 
 	return new_player
 }

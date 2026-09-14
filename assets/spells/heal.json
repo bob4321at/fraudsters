@@ -1,0 +1,25 @@
+{
+  "Name": "Heal",
+  "Position": {
+    "X": 0,
+    "Y": 0
+  },
+  "Velocity": {
+    "X": 0,
+    "Y": 0
+  },
+  "Damage": -5,
+  "Speed": 3,
+  "Lifetime": 100,
+  "Movement": "ShootAt",
+  "ImgPath": "./art/small_heal.png",
+  "Destroy": false,
+  "JustSpawned": false,
+  "Size": {
+    "X": 0,
+    "Y": 0
+  },
+  "ID": 0
+}
+
+

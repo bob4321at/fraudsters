@@ -2,7 +2,6 @@ package server
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"main/level"
 	"main/player"
@@ -204,8 +203,6 @@ func Update(Level *level.LevelStruct, Player *player.PlayerStruct) {
 		if Level.Collide(utils.Vec2{X: GameState.OtherPlayer.POS.X + GameState.OtherPlayer.Velocity.X, Y: GameState.OtherPlayer.POS.Y}, utils.Vec2{X: 12, Y: 16}) {
 			GameState.OtherPlayer.Velocity.X = 0
 		}
-
-		fmt.Println(GameState.OtherPlayer.Velocity)
 
 		OtherPlayerDrawnPos.X -= math.Cos(math.Atan2(OtherPlayerDrawnPos.Y-GameState.OtherPlayer.POS.Y, OtherPlayerDrawnPos.X-GameState.OtherPlayer.POS.X)) * utils.GetDist(OtherPlayerDrawnPos, GameState.OtherPlayer.POS) / 10
 		OtherPlayerDrawnPos.Y -= math.Sin(math.Atan2(OtherPlayerDrawnPos.Y-GameState.OtherPlayer.POS.Y, OtherPlayerDrawnPos.X-GameState.OtherPlayer.POS.X)) * utils.GetDist(OtherPlayerDrawnPos, GameState.OtherPlayer.POS) / 10
