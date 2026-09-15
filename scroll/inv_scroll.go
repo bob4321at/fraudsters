@@ -63,6 +63,10 @@ func SmallHeal(PlayerPos, OtherPlayerPos, ScrollPos utils.Vec2) {
 	AddSpell("./assets/spells/heal.json", ScrollPos)
 }
 
+func WindSpell(PlayerPos, OtherPlayerPos, ScrollPos utils.Vec2) {
+	AddSpell("./assets/spells/wind.json", ScrollPos)
+}
+
 var Conditions = map[string]func(PlayerPos, OtherPlayerPos, ScrollPos utils.Vec2) bool{
 	"start_active":             StartActive,
 	"player_two_hundred_close": PlayerTwoHundredClose,
@@ -75,4 +79,5 @@ var Actions = map[string]func(PlayerPos, OtherPlayerPos, ScrollPos utils.Vec2){
 	"red":        RedSpell,
 	"purple":     PurpleSpell,
 	"small_heal": SmallHeal,
+	"wind_spell": WindSpell,
 }

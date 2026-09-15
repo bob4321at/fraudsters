@@ -2,6 +2,7 @@ package scroll
 
 import (
 	"encoding/json"
+	"main/level"
 	"main/utils"
 	"math"
 	"os"
@@ -29,6 +30,7 @@ type NetworkedSpell struct {
 type SpellInfo struct {
 	HostPosistion   utils.Vec2
 	ClientPosistion utils.Vec2
+	Level           level.LevelStruct
 }
 
 type Condition struct {
@@ -74,8 +76,9 @@ func AddSpell(path string, ScrollPos utils.Vec2) {
 }
 
 var SpellMovement = map[string]func(this_spell *NetworkedSpell, info *SpellInfo){
-	"Static":  StaticSpell,
-	"ShootAt": ShootAt,
+	"Static":            StaticSpell,
+	"ShootAt":           ShootAt,
+	"WindSpellFunction": WindSpellFunction,
 }
 
 func (spell *NetworkedSpell) Draw(screen *ebiten.Image) {
@@ -92,6 +95,41 @@ func (spell *NetworkedSpell) Update(info *SpellInfo) {
 }
 
 func StaticSpell(current_spell *NetworkedSpell, info *SpellInfo) {}
+
+func WindSpellFunction(current_spell *NetworkedSpell, info *SpellInfo) {
+	if !current_spell.JustSpawned {
+		client_dist := utils.GetDist(current_spell.Position, info.ClientPosistion)
+		host_dist := utils.GetDist(current_spell.Position, info.HostPosistion)
+
+		target_angle := 90.0
+
+		if client_dist <= host_dist {
+			target_angle = (math.Atan2(current_spell.Position.Y-info.ClientPosistion.Y, current_spell.Position.X-info.ClientPosistion.X))
+		} else {
+			target_angle = (math.Atan2(current_spell.Position.Y-info.HostPosistion.Y, current_spell.Position.X-info.HostPosistion.X))
+		}
+
+		current_spell.Velocity.X = -math.Cos(target_angle) * float64(current_spell.Speed)
+		current_spell.Velocity.Y = -math.Sin(target_angle) * float64(current_spell.Speed)
+	}
+
+	current_spell.Position.X += current_spell.Velocity.X
+	current_spell.Position.Y += current_spell.Velocity.Y
+
+	current_spell.JustSpawned = true
+
+	if info.Level.Collide(current_spell.Position, current_spell.Size) {
+		length := utils.GetSyncLength(&ConditionsToApply)
+		if utils.GetDist(info.HostPosistion, current_spell.Position) < 100 {
+			ConditionsToApply.Store(length+1, Condition{Name: "LaunchPlayerUp", Value: 0})
+		}
+		length = utils.GetSyncLength(&ConditionsToApply)
+		if utils.GetDist(info.ClientPosistion, current_spell.Position) < 100 {
+			ConditionsToApply.Store(length+1, Condition{Name: "LaunchPlayerUp", Value: 1})
+		}
+		current_spell.Lifetime = 0
+	}
+}
 
 func ShootAt(current_spell *NetworkedSpell, info *SpellInfo) {
 	if !current_spell.JustSpawned {

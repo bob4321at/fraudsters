@@ -1,0 +1,25 @@
+{
+  "Name": "Red",
+  "Position": {
+    "X": 0,
+    "Y": 0
+  },
+  "Velocity": {
+    "X": 0,
+    "Y": 0
+  },
+  "Damage": 0,
+  "Speed": 5,
+  "Lifetime": 100,
+  "Movement": "WindSpellFunction",
+  "ImgPath": "./art/wind.png",
+  "Destroy": false,
+  "JustSpawned": false,
+  "Size": {
+    "X": 0,
+    "Y": 0
+  },
+  "ID": 0
+}
+
+

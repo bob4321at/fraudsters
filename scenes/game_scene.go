@@ -41,6 +41,8 @@ func (scene *GameSceneStruct) Setup() {
 	scene.Level = level.NewLevel()
 
 	scene.Decided = false
+
+	server.PlayerRef = &scene.Player
 }
 
 func (scene *GameSceneStruct) Draw(display *ebiten.Image) {

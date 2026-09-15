@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"main/level"
 	"main/player"
@@ -26,10 +27,12 @@ type OtherPlayerStruct struct {
 }
 
 type GameStateStruct struct {
-	OtherPlayer  OtherPlayerStruct
-	Scrolls      []ServerSideScrolls
-	ScrollsToAdd []scroll.ScrollInventoryStruct
-	Spells       []scroll.NetworkedSpell
+	OtherPlayer               OtherPlayerStruct
+	Scrolls                   []ServerSideScrolls
+	ScrollsToAdd              []scroll.ScrollInventoryStruct
+	Spells                    []scroll.NetworkedSpell
+	VelocityToAddToClient     utils.Vec2
+	ClientVelocityForcesAdded bool
 }
 
 var other_player_texture = textures.NewTexture("./art/other_player.png", "")
@@ -40,6 +43,8 @@ var GameState = GameStateStruct{
 	[]ServerSideScrolls{},
 	[]scroll.ScrollInventoryStruct{},
 	[]scroll.NetworkedSpell{},
+	utils.Vec2{},
+	true,
 }
 
 var waiting_for_other = true
@@ -133,6 +138,13 @@ func StartServer(Player *player.PlayerStruct) {
 				OriginalSpells = append(OriginalSpells, copy)
 			}
 			other_player_real_health := GameState.OtherPlayer.Health
+			other_player_add_velocities := utils.Vec2{}
+
+			if !GameState.ClientVelocityForcesAdded {
+				other_player_add_velocities = GameState.VelocityToAddToClient
+			} else {
+				GameState.VelocityToAddToClient = utils.Vec2{}
+			}
 
 			other_game_state := utils.DecodeBinary(buffer)
 			json.Unmarshal(other_game_state, &GameState)
@@ -142,6 +154,15 @@ func StartServer(Player *player.PlayerStruct) {
 			GameState.Scrolls = OriginalScrolls
 			GameState.Spells = OriginalSpells
 			GameState.OtherPlayer.Health = other_player_real_health
+
+			if !GameState.ClientVelocityForcesAdded {
+				GameState.VelocityToAddToClient = other_player_add_velocities
+			}
+
+			fmt.Println(GameState.VelocityToAddToClient)
+			if GameState.VelocityToAddToClient.Y != 0 {
+				panic(GameState.VelocityToAddToClient)
+			}
 
 			AddScrolls(Player)
 			AddSpellsToServer()
@@ -267,6 +288,9 @@ func ConnectToServer(Player *player.PlayerStruct) {
 		// SEND SELF
 		game_state_to_send := GameState
 		game_state_to_send.OtherPlayer = OtherPlayerStruct{Player.Pos, Player.Health, Player.Vel, time.Now()}
+		Player.Vel.X += GameState.VelocityToAddToClient.X
+		Player.Vel.Y += GameState.VelocityToAddToClient.Y
+		GameState.ClientVelocityForcesAdded = true
 
 		game_state_bytes, err := json.Marshal(game_state_to_send)
 		if err != nil {
